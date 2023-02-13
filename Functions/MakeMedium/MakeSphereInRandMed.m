@@ -30,5 +30,23 @@ dielectricSphere=X.^2+Y.^2+Z.^2<=rad(ii)^2;
 RI=RI + double(dielectricSphere)*(n(ii)-n(ii+1));
 end
 
+figure
+subplot(1,2,1)
+imagesc(x,y,RI(:,:,end/2));
+xlabel('x(\lambda)')
+ylabel('y(\lambda)')
+axis square
+colorbar
+set(gca,'YDir','normal')
+title('xy plane')
+subplot(1,2,2)
+imagesc(x,z,squeeze(RI(:,end/2,:)));
+xlabel('x(\lambda)')
+ylabel('z(\lambda)')
+axis square
+colorbar
+set(gca,'YDir','normal')
+title('xz plane')
+
 end
 

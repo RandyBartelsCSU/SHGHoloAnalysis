@@ -1,4 +1,4 @@
-function evol=MultiLayerBornv2(fxx,fyy,lambda,n_imm,dz,V,U_in,Eps,opt)
+function evol=MultiLayerBornv2(fxx,fyy,lambda,n_imm,dz,V,U_in,Eps,dGk,opt)
 
 % This function computes the propagation of an initial field U_in through a
 % scattering potential V using a first Born approximation for each slice of V. 
@@ -19,7 +19,7 @@ function evol=MultiLayerBornv2(fxx,fyy,lambda,n_imm,dz,V,U_in,Eps,opt)
 
 %prop_crop= (fxx.^2 + fyy.^2 > (n_imm/lambda)^2==0); Elimination of
 %evanescent waves
-
+bound = dGk * ( max(max(sqrt(fxx.^2 + fyy.^2))) - n_imm/lambda );
 
 SquareRt=@(a) abs(real(sqrt(a)))+1i*abs(imag(sqrt(a))); % making sure imaginary and real part is pos otherwise will get gain or backward propagating field
 
@@ -30,7 +30,7 @@ prop=@(z) exp(prop_phs*z);
 %Mask=(n_imm/lambda)^2>1.01*((fxx.^2+fyy.^2));
 
 AG= ((-1i.*exp(prop_phs.*dz)./(4.*pi.*SquareRt((n_imm/lambda)^2-(fxx.^2+fyy.^2)+1i*Eps)))); % Angular Greens function
-
+AG(fxx.^2 + fyy.^2 > (n_imm/lambda + bound)^2) = 0;
 
 %AG(isnan(AG)==1)=0;
 propdz=prop(dz);

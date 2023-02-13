@@ -4,7 +4,7 @@ ps          = .105;                 % pixel size (x,y,z) in object space (micron
 lambda      = 0.5;                  % central wavelength (microns)
 NA          = 0;                  % numerical aperture of imaging and detection lens
 n_imm       = 1;                % refractive index of immersion media
-nsphere=1.02;
+nsphere=1.2;
 n=[nsphere,n_imm];
 k0=(2*pi)/lambda;
 k=k0*n_imm;
@@ -17,6 +17,7 @@ delta = [ps, ps, ps];
 [fx,fy] = L2fxfy(L,delta);
 [fxx,fyy]   = meshgrid(fx,fx);      % 2D grid in fx/fy
 
+dGk = 1;
 rad = 2*lambda;
 
 RI = MakeSphereInRandMed(rad, n, L, delta);
@@ -31,9 +32,9 @@ end
 
 ord = 1;
 
-E_MSR=MultiSlabRytovv2(fxx,fyy,lambda,n_imm,ps,V,U_inp,ord,Eps,'Vol');
-E_MLR=MultiLayerRytovv2(fxx,fyy,lambda,n_imm,ps,V,U_inp,Eps,'Vol');%.017
-E_MLB=MultiLayerBornv2(fxx,fyy,lambda,n_imm,ps,V,U_inp,Eps,'Vol');%.017
+E_MSR=MultiSlabRytovv2(fxx,fyy,lambda,n_imm,ps,V,U_inp,ord,Eps,dGk,'Vol');
+E_MLR=MultiLayerRytovv2(fxx,fyy,lambda,n_imm,ps,V,U_inp,Eps,dGk,'Vol');%.017
+E_MLB=MultiLayerBornv2(fxx,fyy,lambda,n_imm,ps,V,U_inp,Eps,dGk,'Vol');%.017
 
 U_inp_end = exp(1i*k*(z(end)-z(1)))*U_inp;
 
@@ -46,13 +47,13 @@ cmax = max(max(abs(E_tot_MSR)));
 subplot(2,3,1)
 imagesc(x,y,abs(E_tot_MSR))
 axis square
-caxis([0 cmax]);
+clim([0 cmax]);
 colorbar
 title('MSR |E_{tot}|')
 
 subplot(2,3,4)
 imagesc(x,y,abs(E_sca_MSR))
-caxis([0 cmax]);
+clim([0 cmax]);
 axis square
 colorbar
 title('MSR |E_{sca}|')
@@ -60,13 +61,13 @@ title('MSR |E_{sca}|')
 subplot(2,3,2)
 imagesc(x,y,abs(E_tot_MLR))
 axis square
-caxis([0 cmax]);
+clim([0 cmax]);
 colorbar
 title('MLR |E_{tot}|')
 
 subplot(2,3,5)
 imagesc(x,y,abs(E_sca_MLR))
-caxis([0 cmax]);
+clim([0 cmax]);
 axis square
 colorbar
 title('MLR |E_{sca}|')
@@ -74,13 +75,13 @@ title('MLR |E_{sca}|')
 subplot(2,3,3)
 imagesc(x,y,abs(E_tot_MLB))
 axis square
-caxis([0 cmax]);
+clim([0 cmax]);
 colorbar
 title('MLB |E_{tot}|')
 
 subplot(2,3,6)
 imagesc(x,y,abs(E_sca_MLB))
-caxis([0 cmax]);
+clim([0 cmax]);
 axis square
 colorbar
 title('MLB |E_{sca}|')
@@ -103,65 +104,94 @@ E_plane = E_plane./E_plane(end/2,end/2);
 figure
 cmax = max(max(abs(E_sca_MSR)));
 
-subplot(2,4,4)
+subplot(4,4,4)
 imagesc(x,y,abs(E_plane))
-caxis([0 cmax]);
+clim([0 cmax]);
 axis square
 colorbar
-title('ground truth (Mie)')
+title('ground truth |Mie|')
 
-subplot(2,4,1)
+subplot(4,4,8)
+imagesc(x,y,angle(E_plane))
+axis square
+colorbar
+title('ground truth \angle Mie')
+
+subplot(4,4,1)
 imagesc(x,y,abs(E_sca_MSR))
 axis square
-caxis([0 cmax]);
+clim([0 cmax]);
 colorbar
 title('MSR |E_{sca}|')
 
-subplot(2,4,5)
+subplot(4,4,5)
+imagesc(x,y,angle(E_sca_MSR))
+axis square
+colorbar
+title('MSR \angle E_{sca}')
+
+subplot(4,4,9)
 imagesc(x,y,abs(E_sca_MSR-E_plane))
-caxis([0 cmax]);
+clim([0 cmax]);
 axis square
 colorbar
 title('MSR |E_{sca}-E_{Mie}|')
 
-subplot(2,4,2)
+subplot(4,4,13)
+imagesc(x,y,angle(E_sca_MSR-E_plane))
+axis square
+colorbar
+title('\angle E_{sca}-E_{Mie}')
+
+subplot(4,4,2)
 imagesc(x,y,abs(E_sca_MLR))
 axis square
-caxis([0 cmax]);
+clim([0 cmax]);
 colorbar
 title('MLR |E_{sca}|')
 
-subplot(2,4,6)
+subplot(4,4,6)
+imagesc(x,y,angle(E_sca_MLR))
+axis square
+colorbar
+title('\angle E_{sca}')
+
+subplot(4,4,10)
 imagesc(x,y,abs(E_sca_MLR-E_plane))
-caxis([0 cmax]);
+clim([0 cmax]);
 axis square
 colorbar
 title('MLR |E_{sca}-E_{Mie}|')
 
-subplot(2,4,3)
+subplot(4,4,14)
+imagesc(x,y,angle(E_sca_MLR-E_plane))
+axis square
+colorbar
+title('\angle E_{sca}-E_{Mie}')
+
+subplot(4,4,3)
 imagesc(x,y,abs(E_sca_MLB))
 axis square
-caxis([0 cmax]);
+clim([0 cmax]);
 colorbar
 title('MLB |E_{sca}|')
 
-subplot(2,4,7)
+subplot(4,4,7)
+imagesc(x,y,angle(E_sca_MLB))
+axis square
+colorbar
+title('\angle E_{sca}')
+
+subplot(4,4,11)
 imagesc(x,y,abs(E_sca_MLB-E_plane))
-caxis([0 cmax]);
+clim([0 cmax]);
 axis square
 colorbar
 title('MLB |E_{sca}-E_{Mie}|')
 
-%R_test = 10;
-%dR = ps;
-%[D_R_MSR,TH] = RCS(E_MSR,X,Z,k,R_test,dR);
-%[D_R_MLR,TH] = RCS(E_MLR,X,Z,k,R_test,dR);
-%[D_R_MLB,TH] = RCS(E_MLB,X,Z,k,R_test,dR);
-
-
-
-%[dCsdO, ang]= MieRCS(rad, n, lambda);
-
-%c=299792458;
-%[an,bn,RCSTheta] = mieHKURCS(rad,c/lambda,n_imm^2,1,nsphere^2,1,40,TH);
+subplot(4,4,15)
+imagesc(x,y,angle(E_sca_MLB-E_plane))
+axis square
+colorbar
+title('\angle E_{sca}-E_{Mie}')
 
